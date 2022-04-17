@@ -4,9 +4,17 @@ from random import choice
 
 BACKGROUND_COLOR = "#B1DDC6"
 
-df = pandas.read_csv("./data/french_words.csv")
-word_dict = df.to_dict(orient="records")
 current_card = {}
+word_dict = {}
+
+try:
+    data = pandas.read_csv("./data/words_to_learn.csv")
+except FileNotFoundError:
+    original_data = pandas.read_csv("./data/french_words.csv")
+    word_dict = original_data.to_dict(orient="records")
+else:
+    word_dict = data.to_dict(orient="records")
+
 flip_timer = NONE
 
 
@@ -26,6 +34,13 @@ def flip_card():
     flash_card.itemconfig(card_word, text=current_card["English"], fill="white")
 
 
+def is_known():
+    word_dict.remove(current_card)
+    generate_new_card()
+    df = pandas.DataFrame(word_dict)
+    df.to_csv("./data/words_to_learn.csv", index=False)
+
+
 # UI SETUP
 window = Tk()
 window.title("Flashy")
@@ -39,7 +54,7 @@ flash_card = Canvas(width=810, height=530, highlightthickness=0, bg=BACKGROUND_C
 card_background = flash_card.create_image(411, 273, image=card_front_img)
 card_title = flash_card.create_text(400, 150, font=("Ariel", 40, "italic"))
 card_word = flash_card.create_text(400, 263, font=("Ariel", 60, "bold"))
-right_btn = Button(image=right_btn_img, highlightthickness=0, command=generate_new_card)
+right_btn = Button(image=right_btn_img, highlightthickness=0, command=is_known)
 wrong_btn = Button(image=wrong_btn_img, highlightthickness=0, command=generate_new_card)
 
 flash_card.grid(row=0, column=0, columnspan=2)
